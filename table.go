@@ -8,8 +8,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
 const (
@@ -99,7 +97,6 @@ func (t *Table) readRecord() (Record, error) {
 	if string(bytes[:len(RecordMagicHeader)]) != RecordMagicHeader {
 		return nil, ErrMagicHeaderNotFound
 	}
-	spew.Dump("bytes:", bytes)
 	for _, column := range t.Columns {
 		value, err := ReadValue(bytes, column)
 

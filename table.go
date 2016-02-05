@@ -8,6 +8,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 const (
@@ -36,10 +38,8 @@ func TableFromPath(filePath string) (*Table, error) {
 	}
 	ext := filepath.Ext(filePath)
 	admPath := filePath[:len(filePath)-len(ext)] + ".ADM"
-	adm, err := os.Open(admPath)
-	if err != nil {
-		return nil, err
-	}
+	adm, _ := os.Open(admPath)
+	// adm isn't required.
 	return FromReaders(adt, adm)
 }
 
@@ -91,7 +91,8 @@ func (t *Table) Get(record int) (Record, error) {
 func (t *Table) readRecord() (Record, error) {
 	r := Record{}
 	bytes := make([]byte, t.RecordLength)
-	if _, err := io.ReadFull(t.data, bytes); err != nil {
+	if r, err := io.ReadFull(t.data, bytes); err != nil {
+		log.Warn("didn't read enough: ", r, err)
 		return nil, err
 	}
 	if string(bytes[:len(RecordMagicHeader)]) != RecordMagicHeader {
@@ -99,19 +100,21 @@ func (t *Table) readRecord() (Record, error) {
 	}
 	for _, column := range t.Columns {
 		value, err := ReadValue(bytes, column)
+		//log.Println("column:")
+		//spew.Dump(column, err, value)
+		// dbg:
+		//valueBytes := bytes[column.Offset : column.Offset+column.Length]
 
 		if asMemo, ok := value.(MemoField); ok {
 			t.memoData.Seek(int64(asMemo.BlockOffset)*8, 0)
 			data := make([]byte, asMemo.Length)
 			if _, err := io.ReadFull(t.memoData, data); err != nil {
-				return nil, err
+				log.Warnln("didn't read enough for memo field", column.Name, err)
+				return nil, nil
 			}
 			value = string(data)
 		}
 
-		// dbg:
-		//valueBytes := bytes[column.Offset : column.Offset+column.Length]
-		//spew.Dump(column, valueBytes, value)
 		if err != nil {
 			return nil, err
 		}

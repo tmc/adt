@@ -1,6 +1,6 @@
 package adt
 
-type ColumnType uint16
+type ColumnType uint8
 
 const (
 	ColumnTypeBool          ColumnType = 1
@@ -10,10 +10,11 @@ const (
 	ColumnTypeInt           ColumnType = 11
 	ColumnTypeShortInt      ColumnType = 12
 	ColumnTypeCiCharacter   ColumnType = 20
-	ColumnTypeAutoIncrement ColumnType = 16
+	ColumnTypeAutoIncrement ColumnType = 15
 	ColumnTypeDate          ColumnType = 3
-	ColumnTypeTime          ColumnType = 15
+	ColumnTypeTime          ColumnType = 13
 	ColumnTypeTimestamp     ColumnType = 14
+	ColumnTypeCurrency      ColumnType = 17
 )
 
 type MemoField struct {

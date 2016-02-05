@@ -20,6 +20,12 @@ func TestTableRead(t *testing.T) {
 		t.Fatal(err)
 	}
 	spew.Dump(table)
-	r, err := table.Get(int(table.RecordCount - 2))
-	fmt.Printf("%+v\n", r)
+	fmt.Println(table.RecordCount)
+	for i := 0; i < int(table.RecordCount); i++ {
+		_, err := table.Get(i)
+		//fmt.Printf("%+v\n", r)
+		if err != nil {
+			t.Error("row", i, err)
+		}
+	}
 }

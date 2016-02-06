@@ -45,3 +45,7 @@ func ColumnFromReader(r io.Reader) (*Column, error) {
 	}
 	return column, nil
 }
+
+func (c Column) String() string {
+	return c.Name
+}

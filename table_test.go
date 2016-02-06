@@ -1,11 +1,9 @@
 package adt_test
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/tmc/adt"
 )
 
@@ -19,8 +17,6 @@ func TestTableRead(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	spew.Dump(table)
-	fmt.Println(table.RecordCount)
 	for i := 0; i < int(table.RecordCount); i++ {
 		_, err := table.Get(i)
 		//fmt.Printf("%+v\n", r)

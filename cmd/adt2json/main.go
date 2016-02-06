@@ -10,7 +10,10 @@ import (
 	"github.com/tmc/adt"
 )
 
-var flagFile = flag.String("f", "", "path to ADT file")
+var (
+	flagFile  = flag.String("f", "", "path to ADT file")
+	flagIndex = flag.Int("i", 0, "starting index")
+)
 
 func main() {
 	flag.Parse()
@@ -20,7 +23,7 @@ func main() {
 		os.Exit(1)
 	}
 	enc := json.NewEncoder(os.Stdout)
-	for i := 0; i < int(table.RecordCount); i++ {
+	for i := *flagIndex; i < int(table.RecordCount); i++ {
 		r, err := table.Get(i)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)

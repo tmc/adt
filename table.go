@@ -8,6 +8,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
+	"time"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -96,12 +98,10 @@ func (t *Table) readRecord() (Record, error) {
 		return nil, err
 	}
 	if string(bytes[:len(RecordMagicHeader)]) != RecordMagicHeader {
-		return nil, ErrMagicHeaderNotFound
+		//return nil, ErrMagicHeaderNotFound
 	}
 	for _, column := range t.Columns {
 		value, err := ReadValue(bytes, column)
-		//log.Println("column:")
-		//spew.Dump(column, err, value)
 		// dbg:
 		//valueBytes := bytes[column.Offset : column.Offset+column.Length]
 
@@ -127,7 +127,7 @@ func ReadValue(src []byte, column *Column) (interface{}, error) {
 	valueBytes := src[column.Offset : column.Offset+column.Length]
 	switch column.Type {
 	case ColumnTypeCharacter:
-		return string(valueBytes), nil
+		return strings.Trim(string(valueBytes), "\u0000"), nil
 	case ColumnTypeShortInt:
 		var value int16
 		err := binary.Read(bytes.NewReader(valueBytes), binary.BigEndian, &value)
@@ -140,10 +140,27 @@ func ReadValue(src []byte, column *Column) (interface{}, error) {
 		var value MemoField
 		err := binary.Read(bytes.NewReader(valueBytes), binary.LittleEndian, &value)
 		return value, err
+	case ColumnTypeAutoIncrement:
+		var value uint32
+		err := binary.Read(bytes.NewReader(valueBytes), binary.LittleEndian, &value)
+		return value, err
+	case ColumnTypeBool:
+		var value bool
+		if src[column.Offset : column.Offset+column.Length][0] == 'T' {
+			value = true
+		}
+		return value, nil
+	case ColumnTypeTimestamp:
+		fallthrough
+	case ColumnTypeDate:
+		var value time.Time
+		return value, nil
+		return nil, fmt.Errorf("adt ReadValue: %s not implemented", column.Type)
+		return value, nil
 	default:
 		value := make([]byte, column.Length)
 		copy(value, src[column.Offset:column.Offset+column.Length])
-		return value, nil
 		return nil, fmt.Errorf("adt ReadValue: %s not implemented", column.Type)
+		return value, nil
 	}
 }

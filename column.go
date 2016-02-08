@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"io"
 	"strings"
 )
@@ -47,5 +48,5 @@ func ColumnFromReader(r io.Reader) (*Column, error) {
 }
 
 func (c Column) String() string {
-	return c.Name
+	return fmt.Sprintf("%s (%s)", c.Name, c.Type)
 }

@@ -9,7 +9,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -127,7 +126,7 @@ func ReadValue(src []byte, column *Column) (interface{}, error) {
 	valueBytes := src[column.Offset : column.Offset+column.Length]
 	switch column.Type {
 	case ColumnTypeCharacter:
-		return strings.Trim(string(valueBytes), "\u0000"), nil
+		return strings.Trim(string(valueBytes), " \u0000"), nil
 	case ColumnTypeShortInt:
 		var value int16
 		err := binary.Read(bytes.NewReader(valueBytes), binary.BigEndian, &value)
@@ -151,16 +150,20 @@ func ReadValue(src []byte, column *Column) (interface{}, error) {
 		}
 		return value, nil
 	case ColumnTypeTimestamp:
-		fallthrough
-	case ColumnTypeDate:
-		var value time.Time
+		buf := src[column.Offset : column.Offset+column.Length]
+		i := binary.LittleEndian.Uint32(buf[:4])
+		j := binary.LittleEndian.Uint32(buf[4:])
+		value := adtDatetimeToTime(int32(i), int32(j))
 		return value, nil
-		return nil, fmt.Errorf("adt ReadValue: %s not implemented", column.Type)
+	case ColumnTypeDate:
+		buf := src[column.Offset : column.Offset+column.Length]
+		i := binary.LittleEndian.Uint32(buf)
+		value := adtDateToTime(int32(i))
 		return value, nil
 	default:
 		value := make([]byte, column.Length)
 		copy(value, src[column.Offset:column.Offset+column.Length])
-		return nil, fmt.Errorf("adt ReadValue: %s not implemented", column.Type)
 		return value, nil
+		return nil, fmt.Errorf("adt ReadValue: %s not implemented", column.Type)
 	}
 }

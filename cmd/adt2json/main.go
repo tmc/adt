@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/tmc/adt"
 )
 
@@ -36,7 +35,6 @@ func main() {
 			os.Exit(1)
 		}
 		var buf []byte
-		spew.Dump(r)
 		if *flagIndent {
 			buf, _ = json.MarshalIndent(r, "", "  ")
 		} else {

@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"reflect"
 	"strings"
 
 	"github.com/jmoiron/sqlx"
@@ -14,15 +15,16 @@ import (
 )
 
 var (
-	flagFile      = flag.String("f", "", "path to ADT file")
-	flagTableName = flag.String("n", "", "name of resulting database table")
-	flagVerbose   = flag.Bool("v", false, "verbose")
+	flagFile       = flag.String("f", "", "path to ADT file")
+	flagTableName  = flag.String("n", "", "name of resulting database table")
+	flagVerbose    = flag.Bool("v", false, "verbose")
+	flagMinRecords = flag.Int("minrecords", 1, "if a table has fewer than this many records it will be skipped")
 )
 
 func main() {
 	flag.Parse()
 	if err := migrate(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		log.Println(*flagTableName, err)
 		os.Exit(1)
 	}
 }
@@ -36,14 +38,16 @@ func migrate() error {
 	if err != nil {
 		return err
 	}
+	if *flagTableName == "" {
+		*flagTableName = strings.TrimSuffix(*flagFile, ".ADT")
+	}
 
 	table, err := adt.TableFromPath(*flagFile)
 	if err != nil {
 		return err
 	}
-
-	if *flagTableName == "" {
-		*flagTableName = strings.TrimSuffix(*flagFile, ".ADT")
+	if int(table.RecordCount) < *flagMinRecords {
+		return fmt.Errorf("too few records (%d)", table.RecordCount)
 	}
 
 	ddl, err := table.SQLDDL(*flagTableName)
@@ -54,8 +58,7 @@ func migrate() error {
 	if *flagVerbose {
 		fmt.Println(ddl)
 	}
-	_, err = db.Exec(ddl)
-	if err != nil {
+	if _, err = db.Exec(ddl); err != nil {
 		return err
 	}
 
@@ -72,13 +75,17 @@ func migrate() error {
 
 		values := make([]interface{}, 0, len(table.Columns))
 		for _, column := range table.Columns {
-			values = append(values, r[column.Name])
+			var value interface{} = r[column.Name]
+			if !reflect.ValueOf(value).IsValid() {
+				value = nil
+			}
+			values = append(values, value)
 		}
 		if _, err = prepped.Exec(values...); err != nil {
 			return err
 		}
 	}
-	log.Println(table.RecordCount, "rows inserted")
+	log.Println(*flagTableName, table.RecordCount, "rows inserted")
 
 	return nil
 }

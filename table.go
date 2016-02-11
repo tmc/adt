@@ -158,6 +158,9 @@ func ReadValue(src []byte, column *Column) (interface{}, error) {
 			value = 0
 		}
 		return value, err
+	case ColumnTypeBlob:
+		buf := src[column.Offset : column.Offset+column.Length]
+		return buf, nil
 	case ColumnTypeMemo:
 		var value MemoField
 		err := binary.Read(bytes.NewReader(valueBytes), binary.LittleEndian, &value)
@@ -172,6 +175,10 @@ func ReadValue(src []byte, column *Column) (interface{}, error) {
 			value = true
 		}
 		return value, nil
+	case ColumnTypeTime:
+		buf := src[column.Offset : column.Offset+column.Length]
+		i := binary.LittleEndian.Uint32(buf)
+		return time.Second * time.Duration(i), nil
 	case ColumnTypeTimestamp:
 		buf := src[column.Offset : column.Offset+column.Length]
 		i := binary.LittleEndian.Uint32(buf[:4])

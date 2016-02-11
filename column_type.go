@@ -6,6 +6,7 @@ const (
 	ColumnTypeBool          ColumnType = 1
 	ColumnTypeCharacter     ColumnType = 4
 	ColumnTypeMemo          ColumnType = 5
+	ColumnTypeBlob          ColumnType = 6
 	ColumnTypeDouble        ColumnType = 10
 	ColumnTypeInt           ColumnType = 11
 	ColumnTypeShortInt      ColumnType = 12
@@ -26,6 +27,7 @@ var sqlTypes = map[ColumnType]string{
 	ColumnTypeBool:          "BOOLEAN",
 	ColumnTypeCharacter:     "VARCHAR(255)",
 	ColumnTypeMemo:          "TEXT",
+	ColumnTypeBlob:          "BLOB",
 	ColumnTypeDouble:        "DOUBLE",
 	ColumnTypeInt:           "INTEGER",
 	ColumnTypeShortInt:      "SMALLINT",

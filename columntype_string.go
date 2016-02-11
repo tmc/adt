@@ -6,7 +6,7 @@ import "fmt"
 
 const (
 	_ColumnType_name_0 = "ColumnTypeBool"
-	_ColumnType_name_1 = "ColumnTypeDateColumnTypeCharacterColumnTypeMemo"
+	_ColumnType_name_1 = "ColumnTypeDateColumnTypeCharacterColumnTypeMemoColumnTypeBlob"
 	_ColumnType_name_2 = "ColumnTypeDoubleColumnTypeIntColumnTypeShortIntColumnTypeTimeColumnTypeTimestampColumnTypeAutoIncrement"
 	_ColumnType_name_3 = "ColumnTypeCurrency"
 	_ColumnType_name_4 = "ColumnTypeCiCharacter"
@@ -14,7 +14,7 @@ const (
 
 var (
 	_ColumnType_index_0 = [...]uint8{0, 14}
-	_ColumnType_index_1 = [...]uint8{0, 14, 33, 47}
+	_ColumnType_index_1 = [...]uint8{0, 14, 33, 47, 61}
 	_ColumnType_index_2 = [...]uint8{0, 16, 29, 47, 61, 80, 103}
 	_ColumnType_index_3 = [...]uint8{0, 18}
 	_ColumnType_index_4 = [...]uint8{0, 21}
@@ -24,7 +24,7 @@ func (i ColumnType) String() string {
 	switch {
 	case i == 1:
 		return _ColumnType_name_0
-	case 3 <= i && i <= 5:
+	case 3 <= i && i <= 6:
 		i -= 3
 		return _ColumnType_name_1[_ColumnType_index_1[i]:_ColumnType_index_1[i+1]]
 	case 10 <= i && i <= 15:

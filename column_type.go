@@ -21,3 +21,26 @@ type MemoField struct {
 	BlockOffset uint32
 	Length      uint16
 }
+
+var sqlTypes = map[ColumnType]string{
+	ColumnTypeBool:          "BOOLEAN",
+	ColumnTypeCharacter:     "VARCHAR(255)",
+	ColumnTypeMemo:          "TEXT",
+	ColumnTypeDouble:        "DOUBLE",
+	ColumnTypeInt:           "INTEGER",
+	ColumnTypeShortInt:      "SMALLINT",
+	ColumnTypeCiCharacter:   "VARCHAR(255)",
+	ColumnTypeAutoIncrement: "INTEGER PRIMARY KEY", // AUTO_INCREMENT",
+	ColumnTypeDate:          "DATE",
+	ColumnTypeTime:          "TIME",
+	ColumnTypeTimestamp:     "DATETIME",
+	ColumnTypeCurrency:      "DECIMAL(10,2)",
+}
+
+func (ct ColumnType) SQLType() string {
+	t, ok := sqlTypes[ct]
+	if ok {
+		return t
+	}
+	return "VARCHAR(100)"
+}

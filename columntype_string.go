@@ -8,14 +8,16 @@ const (
 	_ColumnType_name_0 = "ColumnTypeBool"
 	_ColumnType_name_1 = "ColumnTypeDateColumnTypeCharacterColumnTypeMemo"
 	_ColumnType_name_2 = "ColumnTypeDoubleColumnTypeIntColumnTypeShortIntColumnTypeTimeColumnTypeTimestampColumnTypeAutoIncrement"
-	_ColumnType_name_3 = "ColumnTypeCiCharacter"
+	_ColumnType_name_3 = "ColumnTypeCurrency"
+	_ColumnType_name_4 = "ColumnTypeCiCharacter"
 )
 
 var (
 	_ColumnType_index_0 = [...]uint8{0, 14}
 	_ColumnType_index_1 = [...]uint8{0, 14, 33, 47}
 	_ColumnType_index_2 = [...]uint8{0, 16, 29, 47, 61, 80, 103}
-	_ColumnType_index_3 = [...]uint8{0, 21}
+	_ColumnType_index_3 = [...]uint8{0, 18}
+	_ColumnType_index_4 = [...]uint8{0, 21}
 )
 
 func (i ColumnType) String() string {
@@ -28,8 +30,10 @@ func (i ColumnType) String() string {
 	case 10 <= i && i <= 15:
 		i -= 10
 		return _ColumnType_name_2[_ColumnType_index_2[i]:_ColumnType_index_2[i+1]]
-	case i == 20:
+	case i == 17:
 		return _ColumnType_name_3
+	case i == 20:
+		return _ColumnType_name_4
 	default:
 		return fmt.Sprintf("ColumnType(%d)", i)
 	}

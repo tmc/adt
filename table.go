@@ -6,9 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -21,6 +23,7 @@ const (
 
 var (
 	ErrMagicHeaderNotFound = errors.New("adt: magic header missing")
+	ErrMultiplePKs         = errors.New("adt: multiple primary keys")
 )
 
 type Table struct {
@@ -84,6 +87,19 @@ func readLE(src []byte, dest interface{}) error {
 	return binary.Read(bytes.NewReader(src), binary.LittleEndian, dest)
 }
 
+func (t *Table) GetPK() (*Column, error) {
+	var result *Column
+	for _, c := range t.Columns {
+		if c.Type == ColumnTypeAutoIncrement {
+			if result != nil {
+				return nil, ErrMultiplePKs
+			}
+			result = c
+		}
+	}
+	return result, nil
+}
+
 func (t *Table) Get(record int) (Record, error) {
 	t.data.Seek(int64(int(t.DataOffset)+int(t.RecordLength)*record), 0)
 	return t.readRecord()
@@ -129,11 +145,18 @@ func ReadValue(src []byte, column *Column) (interface{}, error) {
 		return strings.Trim(string(valueBytes), " \u0000"), nil
 	case ColumnTypeShortInt:
 		var value int16
-		err := binary.Read(bytes.NewReader(valueBytes), binary.BigEndian, &value)
+		err := binary.Read(bytes.NewReader(valueBytes), binary.LittleEndian, &value)
+		// null encoded as minint
+		if value == math.MinInt16 {
+			value = 0
+		}
 		return value, err
 	case ColumnTypeInt:
 		var value int32
-		err := binary.Read(bytes.NewReader(valueBytes), binary.BigEndian, &value)
+		err := binary.Read(bytes.NewReader(valueBytes), binary.LittleEndian, &value)
+		if value == math.MinInt32 {
+			value = 0
+		}
 		return value, err
 	case ColumnTypeMemo:
 		var value MemoField
@@ -154,16 +177,29 @@ func ReadValue(src []byte, column *Column) (interface{}, error) {
 		i := binary.LittleEndian.Uint32(buf[:4])
 		j := binary.LittleEndian.Uint32(buf[4:])
 		value := adtDatetimeToTime(int32(i), int32(j))
+		if i == 0 {
+			value = time.Time{}
+		}
 		return value, nil
 	case ColumnTypeDate:
 		buf := src[column.Offset : column.Offset+column.Length]
 		i := binary.LittleEndian.Uint32(buf)
 		value := adtDateToTime(int32(i))
+		if i == 0 {
+			value = time.Time{}
+		}
 		return value, nil
+	case ColumnTypeCurrency:
+		fallthrough
+	case ColumnTypeDouble:
+		buf := src[column.Offset : column.Offset+column.Length]
+		var value float64
+		err := binary.Read(bytes.NewReader(buf), binary.LittleEndian, &value)
+		return value, err
 	default:
 		value := make([]byte, column.Length)
 		copy(value, src[column.Offset:column.Offset+column.Length])
-		return value, nil
 		return nil, fmt.Errorf("adt ReadValue: %s not implemented", column.Type)
+		return value, nil
 	}
 }

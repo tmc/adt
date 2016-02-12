@@ -27,6 +27,7 @@ var (
 )
 
 type Table struct {
+	Name         string
 	RecordCount  uint32
 	DataOffset   uint16
 	RecordLength uint32
@@ -44,7 +45,9 @@ func TableFromPath(filePath string) (*Table, error) {
 	admPath := filePath[:len(filePath)-len(ext)] + ".ADM"
 	adm, _ := os.Open(admPath)
 	// adm isn't required.
-	return FromReaders(adt, adm)
+	table, err := FromReaders(adt, adm)
+	table.Name = filepath.Base(filePath)
+	return table, err
 }
 
 func FromReaders(adtContent io.ReadSeeker, admContent io.ReadSeeker) (*Table, error) {

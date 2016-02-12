@@ -148,14 +148,14 @@ func ReadValue(src []byte, column *Column) (interface{}, error) {
 		err := binary.Read(bytes.NewReader(valueBytes), binary.LittleEndian, &value)
 		// null encoded as minint
 		if value == math.MinInt16 {
-			value = 0
+			return nil, nil
 		}
 		return value, err
 	case ColumnTypeInt:
 		var value int32
 		err := binary.Read(bytes.NewReader(valueBytes), binary.LittleEndian, &value)
 		if value == math.MinInt32 {
-			value = 0
+			return nil, nil
 		}
 		return value, err
 	case ColumnTypeBlob:
@@ -202,6 +202,9 @@ func ReadValue(src []byte, column *Column) (interface{}, error) {
 		buf := src[column.Offset : column.Offset+column.Length]
 		var value float64
 		err := binary.Read(bytes.NewReader(buf), binary.LittleEndian, &value)
+		if value == -1.6e-322 {
+			return nil, err
+		}
 		return value, err
 	default:
 		value := make([]byte, column.Length)

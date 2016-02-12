@@ -185,7 +185,7 @@ func ReadValue(src []byte, column *Column) (interface{}, error) {
 		j := binary.LittleEndian.Uint32(buf[4:])
 		value := adtDatetimeToTime(int32(i), int32(j))
 		if i == 0 {
-			value = time.Time{}
+			return nil, nil
 		}
 		return value, nil
 	case ColumnTypeDate:
@@ -193,7 +193,7 @@ func ReadValue(src []byte, column *Column) (interface{}, error) {
 		i := binary.LittleEndian.Uint32(buf)
 		value := adtDateToTime(int32(i))
 		if i == 0 {
-			value = time.Time{}
+			return nil, nil
 		}
 		return value, nil
 	case ColumnTypeCurrency:

@@ -1,0 +1,11 @@
+{{ define "title" }}index{{ end }}
+{{ define "content" }}
+dbs: {{ . | len }}
+
+<ul>
+{{ range . }}
+  <li><a href="/dbs/{{.}}">{{.}}</a></li>
+{{ end }}
+</ul>
+
+{{ end }}

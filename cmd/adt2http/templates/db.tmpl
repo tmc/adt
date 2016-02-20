@@ -1,0 +1,9 @@
+{{ define "title" }}{{.Name}}{{ end }}
+{{ define "content" }}
+<pre>
+{{.RecordCount}} records
+
+<a href="/dbs/{{.Name}}/1">/dbs/{{.Name}}/1</a>
+<a href="/dbs/{{.Name}}/{{.RecordCount}}">/dbs/{{.Name}}/{{.RecordCount}}</a>
+</pre>
+{{ end }}

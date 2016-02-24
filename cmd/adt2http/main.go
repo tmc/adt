@@ -4,6 +4,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -30,7 +31,6 @@ func main() {
 
 func serve() error {
 	mux := http.NewServeMux()
-	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(rice.MustFindBox("static").HTTPBox())))
 	mux.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
 		render(rw, "index.tmpl", listdbs())
 	})
@@ -42,6 +42,21 @@ func serve() error {
 			table, err := adt.TableFromPath(filepath.Join(*flagPath, parts[0]))
 			if renderErr(rw, err) {
 				return
+			}
+			if query := r.URL.Query().Get("q"); query != "" {
+				field := r.URL.Query().Get("field")
+				for i := int(table.RecordCount) - 1; i >= 0; i-- {
+					data, err := table.Get(i)
+					if renderErr(rw, err) {
+						return
+					}
+					if fmt.Sprint(data[field]) == query {
+						rw.Header().Add("Content-Type", "application/json")
+						json.NewEncoder(rw).Encode(data)
+						return
+					}
+				}
+				rw.WriteHeader(http.StatusNotFound)
 			}
 			render(rw, "db.tmpl", table)
 		case 2:

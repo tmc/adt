@@ -29,12 +29,18 @@ func main() {
 	}
 }
 
+func cors(rw http.ResponseWriter, r *http.Request) {
+	rw.Header().Set("Access-Control-Allow-Origin", "*")
+	rw.Header().Set("Access-Control-Allow-Headers", r.Header.Get("Access-Control-Request-Headers"))
+}
+
 func serve() error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
 		render(rw, "index.tmpl", listdbs())
 	})
 	mux.HandleFunc("/dbs/", func(rw http.ResponseWriter, r *http.Request) {
+		cors(rw, r)
 		name := r.URL.Path[len("/dbs/"):]
 		parts := strings.Split(name, "/")
 		switch len(parts) {

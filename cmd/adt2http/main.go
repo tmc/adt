@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -20,11 +21,17 @@ var (
 	flagPath    = flag.String("path", ".", "path to ADT files")
 	flagVerbose = flag.Bool("v", false, "verbose")
 	flagAddr    = flag.String("http", ":7000", "listen address")
+	flagConfig  = flag.String("conf", "", "path to config json")
 )
 
 func main() {
 	flag.Parse()
-	if err := serve(); err != nil {
+
+	cfg, err := loadConfig(*flagConfig)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	if err := serve(cfg); err != nil {
 		log.Fatalln(err)
 	}
 }
@@ -34,7 +41,19 @@ func cors(rw http.ResponseWriter, r *http.Request) {
 	rw.Header().Set("Access-Control-Allow-Headers", r.Header.Get("Access-Control-Request-Headers"))
 }
 
-func serve() error {
+func loadConfig(path string) (*Config, error) {
+	if path == "" {
+		return nil, nil
+	}
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	result := &Config{}
+	return result, json.NewDecoder(f).Decode(&result)
+}
+
+func serve(cfg *Config) error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
 		render(rw, "index.tmpl", listdbs())

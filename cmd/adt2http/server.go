@@ -10,10 +10,13 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/GeertJohan/go.rice"
 	"github.com/tmc/adt"
 )
+
+var startTime = time.Now()
 
 type Server struct {
 	cfg     Config
@@ -52,6 +55,11 @@ func (s *Server) srvDBs(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) srvDBIndex(rw http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+	log.Println("start", r.URL.String())
+	defer func() {
+		log.Println("end", r.URL.String(), time.Now().Sub(start))
+	}()
 	name := r.URL.Path[len("/dbs/"):]
 	parts := strings.Split(name, "/")
 	table, err := adt.TableFromPath(filepath.Join(s.path, parts[0]))
@@ -81,6 +89,11 @@ func (s *Server) srvDBIndex(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) srvDBRecord(rw http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+	log.Println("start", r.URL.String())
+	defer func() {
+		log.Println("end", r.URL.String(), time.Now().Sub(start))
+	}()
 	name := r.URL.Path[len("/dbs/"):]
 	parts := strings.Split(name, "/")
 	table, err := adt.TableFromPath(filepath.Join(s.path, parts[0]))
@@ -148,6 +161,7 @@ func cors(rw http.ResponseWriter, r *http.Request) {
 }
 
 func render(rw http.ResponseWriter, tmpl string, data interface{}) {
+	rw.Header().Set("x-uptime", fmt.Sprint(time.Now().Sub(startTime)))
 	t, err := getTmpl(tmpl)
 	if renderErr(rw, err) {
 		return

@@ -7,9 +7,9 @@ import (
 	"text/template"
 )
 
-var ddlTmpl = `CREATE TABLE IF NOT EXISTS "{{.TableName}}" (
+var ddlTmpl = `CREATE TABLE IF NOT EXISTS ` + "`{{.TableName}}`" + ` (
 {{range $index, $column := .Columns }}{{if $index}},{{end}}
-	"{{.Name}}" {{.Type.SQLType}}{{end}}
+	` + "`{{.Name}}`" + ` {{.Type.SQLType}}{{end}}
 )`
 
 func (t *Table) SQLDDL(tableName string) (string, error) {
@@ -30,6 +30,6 @@ func (t *Table) InsertSQL(tableName string) string {
 	for i := 0; i < len(t.Columns); i++ {
 		placeHolders = append(placeHolders, "?") // todo(mysqlism)
 	}
-	result := fmt.Sprintf(`INSERT INTO "%s" VALUES(%s)`, tableName, strings.Join(placeHolders, ","))
+	result := fmt.Sprintf("INSERT INTO `%s` VALUES(%s)", tableName, strings.Join(placeHolders, ","))
 	return result
 }

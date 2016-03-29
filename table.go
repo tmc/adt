@@ -130,7 +130,7 @@ func (t *Table) readRecord() (Record, error) {
 				log.Warnln("didn't read enough for memo field", column.Name, err)
 				return nil, nil
 			}
-			value = string(data)
+			value = data
 		}
 
 		if err != nil {
@@ -145,7 +145,11 @@ func ReadValue(src []byte, column *Column) (interface{}, error) {
 	valueBytes := src[column.Offset : column.Offset+column.Length]
 	switch column.Type {
 	case ColumnTypeCharacter:
-		return strings.Trim(string(valueBytes), " \u0000"), nil
+		runes := make([]rune, 0, len(valueBytes))
+		for _, b := range valueBytes {
+			runes = append(runes, rune(b))
+		}
+		return strings.Trim(string(runes), " \u0000"), nil
 	case ColumnTypeShortInt:
 		var value int16
 		err := binary.Read(bytes.NewReader(valueBytes), binary.LittleEndian, &value)
@@ -181,7 +185,11 @@ func ReadValue(src []byte, column *Column) (interface{}, error) {
 	case ColumnTypeTime:
 		buf := src[column.Offset : column.Offset+column.Length]
 		i := binary.LittleEndian.Uint32(buf)
-		return time.Second * time.Duration(i), nil
+		n := int32(i)
+		if n == -1 {
+			return time.Duration(0), nil
+		}
+		return time.Millisecond * time.Duration(n), nil
 	case ColumnTypeTimestamp:
 		buf := src[column.Offset : column.Offset+column.Length]
 		i := binary.LittleEndian.Uint32(buf[:4])

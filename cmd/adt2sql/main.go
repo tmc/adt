@@ -9,7 +9,9 @@ import (
 	"os"
 	"reflect"
 	"strings"
+	"time"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/jmoiron/sqlx"
 	"github.com/tmc/adt"
 )
@@ -79,9 +81,14 @@ func migrate() error {
 			if !reflect.ValueOf(value).IsValid() {
 				value = nil
 			}
+			if dur, ok := value.(time.Duration); ok {
+				value = durToSQL(dur)
+			}
 			values = append(values, value)
 		}
 		if _, err = prepped.Exec(values...); err != nil {
+			fmt.Println("insert error")
+			spew.Dump(r)
 			return err
 		}
 	}
@@ -98,4 +105,22 @@ func newDBFromURL(URL string) (*sqlx.DB, error) {
 
 	DSN := strings.TrimLeft(p.String(), p.Scheme+"://")
 	return sqlx.Connect(p.Scheme, DSN)
+}
+
+func durToSQL(d time.Duration) string {
+	sign := 1
+	if d < 0 {
+		sign = -1
+		d = -d
+	}
+	ns := int(d % 1e9)
+	d /= 1e9
+	sec := int(d % 60)
+	d /= 60
+	min := int(d % 60)
+	hour := int(d/60) * sign
+	if ns == 0 {
+		return fmt.Sprintf("%d:%02d:%02d", hour, min, sec)
+	}
+	return fmt.Sprintf("%d:%02d:%02d.%04d", hour, min, sec, ns/1e6)
 }

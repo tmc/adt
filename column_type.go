@@ -26,7 +26,7 @@ type MemoField struct {
 var sqlTypes = map[ColumnType]string{
 	ColumnTypeBool:          "BOOLEAN",
 	ColumnTypeCharacter:     "VARCHAR(255)",
-	ColumnTypeMemo:          "TEXT",
+	ColumnTypeMemo:          "BLOB",
 	ColumnTypeBlob:          "BLOB",
 	ColumnTypeDouble:        "DOUBLE",
 	ColumnTypeInt:           "INTEGER",
@@ -36,7 +36,7 @@ var sqlTypes = map[ColumnType]string{
 	ColumnTypeDate:          "DATE",
 	ColumnTypeTime:          "TIME",
 	ColumnTypeTimestamp:     "DATETIME",
-	ColumnTypeCurrency:      "DECIMAL(10,2)",
+	ColumnTypeCurrency:      "DECIMAL(65,4)",
 }
 
 func (ct ColumnType) SQLType() string {

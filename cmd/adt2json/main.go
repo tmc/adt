@@ -41,6 +41,7 @@ func main() {
 			buf, _ = json.Marshal(r)
 		}
 		os.Stdout.Write(buf)
+		os.Stdout.WriteString("\n")
 	}
 
 }
